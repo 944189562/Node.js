@@ -12,6 +12,9 @@ app.use('/', express.static(__dirname + '/uploads'));
 app.get('/', router.showIndex);
 //相册页
 app.get('/:albumName', router.showAlbum);
+//上传
+app.get('/up',router.showUp);
+app.post('/up',router.doPost)
 //404
 app.use(function (req, res) {
     res.render('err');
