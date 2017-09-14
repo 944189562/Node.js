@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>登录</title>
+</head>
+<body>
+<h1>登录</h1>
+<form>
+    <p>
+        登录名：<input type="text" name="username">
+    </p>
+    <p>
+        密码：<input type="password" name="password">
+    </p>
+    <p>
+        <button type="button">提交</button>
+    </p>
+</form>
+<script src="/js/jquery.js"></script>
+<script>
+    $('button').click(function () {
+        var username = $('input[type=text]').val();
+        var password = $('input[type=password]').val();
+        $.post('/dologin', {'username': username, 'password': password}, function (result) {
+            if (result.status == 1) {
+                alert('登录成功');
+            } else if (result.status == -1) {
+                alert('用户名或密码错误');
+            } else {
+                alert('请求错误')
+            }
+        }, 'json');
+    })
+</script>
+</body>
+</html>

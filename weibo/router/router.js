@@ -2,6 +2,7 @@ var formidable = require('formidable'),
     db = require('../model/db.js'),
     md5 = require('../model/md5.js'),
     fs = require('fs'),
+    gm = require('gm'),
     path = require('path');
 
 //首页
@@ -149,8 +150,32 @@ exports.doAvatar = function (req, res, next) {
     })
 }
 
+//切头像页
 exports.showCut = function (req, res, next) {
     res.render('crop', {
         'avatar': req.session.avatar
+    });
+}
+
+//切头像业务
+exports.doCut = function (req, res, next) {
+    console.log('fafdasdfasd');
+    var form = new formidable.IncomingForm();
+    form.parse(req, function (err, fields, files) {
+        var filename = req.session.avatar,
+            width = fields.width,
+            height = fields.height,
+            top = fields.top,
+            left = fields.left;
+        gm('./avatar/' + filename)
+            .crop(width, height, top, left)
+            .resize()
+            .write('./avatar/' + filename, function (err) {
+                if (err) {
+                    res.send('-1');
+                    return;
+                }
+                res.send('1');
+            })
     });
 }

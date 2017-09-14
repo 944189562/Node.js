@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>注册</title>
+</head>
+<body>
+<h1>注册</h1>
+<div>
+    <p>
+        登录名：<input type="text" name="username">
+    </p>
+    <p>
+        密码：<input type="password" name="password">
+    </p>
+    <p>
+        <button type="button">提交</button>
+    </p>
+</div>
+<script src="/js/jquery.js"></script>
+<script>
+    $('button').click(function () {
+        var username = $('input[type=text]').val();
+        var password = $('input[type=password]').val();
+        $.post('/doregist', {'username': username, 'password': password}, function (result) {
+            if (result.status == 1) {
+                alert('注册成功');
+            } else if (result.status == 1) {
+                alert('请重新注册');
+            }
+        }, 'json');
+    })
+</script>
+</body>
+</html>

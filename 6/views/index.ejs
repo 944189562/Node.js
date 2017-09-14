@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>留言册</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <style>
+        .row h4 {
+            text-align: center;
+        }
+
+        .alert {
+            display: none;
+        }
+
+        .remove {
+            display: block;
+            background-color: transparent;
+            outline: none;
+            color: #fff;
+            float: right;
+            border: 1px solid #fff;
+        }
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-default">
+    <h1>我的留言册</h1>
+</nav>
+<div class="container">
+    <div class="row">
+        <form class="form-horizontal">
+            <div class="form-group">
+                <label class="col-sm-2 control-label">姓名</label>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control" id="name" name="name" placeholder="姓名">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-2 control-label">留言</label>
+                <div class="col-sm-10">
+                    <textarea type="text" rows="3" class="form-control" id="liuyan" name="liuyan"
+                              placeholder="留言"></textarea>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-offset-2 col-sm-10">
+                    <button type="button" class="btn btn-success" id="tijiao">提交</button>
+                </div>
+            </div>
+        </form>
+        <div class="alert alert-success alert-dismissible" role="alert" id="success">
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span
+                        aria-hidden="true">&times;</span></button>
+            <strong>成功！</strong> 数据成功提交
+        </div>
+        <div class="alert alert-warning alert-dismissible" role="alert" id="fail">
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span
+                        aria-hidden="true">&times;</span></button>
+            <strong>Warning!</strong>数据提交失败
+        </div>
+        <div class="alert alert-success alert-dismissible" role="alert" id="remove">
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span
+                        aria-hidden="true">&times;</span></button>
+            数据已删除
+        </div>
+        <h3>留言内容</h3>
+        <div id="allliuyan"></div>
+        <nav aria-label="Page navigation">
+            <ul class="pagination">
+                <li>
+                    <a href="javascript:;" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+                <% for(var i = 1;i < pagemount + 1;i++){ %>
+                <li class="yemaanniu" data-page="<%= i %>"><a href="javascript:;"><%= i %></a></li>
+                <% } %>
+                <li>
+                    <a href="javascript:;" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</div>
+<script type="text/template" id="moban" data-id="{{= id}}">
+    <div class="list-group">
+        <div class="list-group-item active">
+            <h4 class="list-group-item-heading">姓名： {{= name }}</h4>
+            <p class="list-group-item-text">留言：{{= liuyan }}</p>
+            <span>时间：{{=time}}</span>
+            <button class="remove" data-id="{{= id}}" type="button">删除</button>
+        </div>
+    </div>
+</script>
+<script src="js/jquery-3.1.1.min.js"></script>
+<script src="js/bootstrap.min.js"></script>
+<script src="js/underscore_xiugai.js"></script>
+<script>
+    $('.yemaanniu:first').addClass('active');
+    $('.yemaanniu').click(function () {
+        var page = $(this).attr('data-page');
+
+        $(this).addClass('active').siblings().removeClass('active');
+        find(parseInt(page));
+    })
+    find(1);
+
+    //ajax请求数据
+    function find(page) {
+        $('#allliuyan').html('');
+        $.ajax({
+            url: 'find?page=' + (page - 1),
+            type: 'get',
+            success: function (res) {
+                var compiled = _.template($('#moban').html());
+                for (var i = 0; i < res.result.length; i++) {
+                    var html = compiled({
+                        id: res.result[i]._id,
+                        name: res.result[i].name,
+                        liuyan: res.result[i].liuyan,
+                        time: res.result[i].time ? res.result[i].time : ''
+                    })
+                    $('#allliuyan').append(html);
+
+                }
+            }
+        })
+    }
+
+    // ajax提交表单
+    $('#tijiao').click(function () {
+        $.ajax({
+            url: 'liuyan',
+            type: 'POST',
+            data: {
+                "name": $("#name").val(),
+                "liuyan": $('#liuyan').val()
+            },
+            success: function (res) {
+                console.log(res.result);
+                if (res.result == 1) {
+                    var compiled = _.template($('#moban').html());
+                    var html = compiled({name: $("#name").val(), liuyan: $('#liuyan').val(), time: new Date(), id: ''});
+                    $('#allliuyan').prepend(html);
+                    $("#name").val('');
+                    $('#liuyan').val('')
+                    $('#success').fadeIn();
+                    find(1);
+                } else {
+                    $('#fail').fadeIn();
+                }
+            },
+            error: function (err) {
+                console.log(err);
+                $('#fail').fadeIn();
+            }
+        })
+    })
+    //删除留言
+    jQuery(function () {
+        $('.remove').click(function () {
+            var id = $(this).attr('data-id');
+            $.ajax({
+                url: 'remove',
+                type: 'GET',
+                data: {
+                    id: id
+                },
+                dataType: 'json',
+                success: function (res) {
+                    if (res.result == 1) {
+                        $('#remove').fadeIn();
+                    } else {
+                        $('#fail').fadeIn();
+                    }
+                },
+                error: function (err) {
+                    $('#fail').fadeIn();
+                }
+            })
+        })
+    })
+</script>
+</body>
+</html>
