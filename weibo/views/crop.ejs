@@ -4,7 +4,7 @@
     <title>Aspect Ratio with Preview Pane | Jcrop Demo</title>
     <meta http-equiv="Content-type" content="text/html;charset=UTF-8"/>
     <link rel="stylesheet" href="/css/jquery.Jcrop.css" type="text/css"/>
-    <link rel="stylesheet" href="/css/bootstrap.min.js">
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
     <script src="/js/jquery.min.js"></script>
     <script src="/js/jquery.Jcrop.min.js"></script>
     <style type="text/css">
@@ -114,14 +114,21 @@
             var height = parseInt($('.jcrop-holder>div:first-child').css('height'));
             var top = parseInt($('.jcrop-holder>div:first-child').css('top'));
             var left = parseInt($('.jcrop-holder>div:first-child').css('left'));
-            var obj = {
-                width: width,
-                height: height,
-                top: top,
-                left: left
-            };
-            $.post('/crop', {obj: obj}, function (res) {
+            $.ajax({
+                url: '/doCut',
+                type: 'post',
+                data: {
+                    width: width,
+                    height: height,
+                    top: top,
+                    left: left
+                },
+                success: function (res) {
 
+                },
+                error: function (err) {
+                    alert(JSON.stringify(err));
+                }
             })
         })
     });
