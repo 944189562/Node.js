@@ -159,23 +159,37 @@ exports.showCut = function (req, res, next) {
 
 //切头像业务
 exports.doCut = function (req, res, next) {
-    console.log('fafdasdfasd');
     var form = new formidable.IncomingForm();
     form.parse(req, function (err, fields, files) {
         var filename = req.session.avatar,
-            width = fields.width,
-            height = fields.height,
-            top = fields.top,
-            left = fields.left;
+            width = parseInt(fields.width),
+            height = parseInt(fields.height),
+            top = parseInt(fields.top),
+            left = parseInt(fields.left);
+        console.log(fields);
         gm('./avatar/' + filename)
-            .crop(width, height, top, left)
+            .crop(width, height, left, top)
             .resize()
             .write('./avatar/' + filename, function (err) {
                 if (err) {
                     res.send('-1');
                     return;
                 }
-                res.send('1');
+                //更改数据库
+                db.updateMany('users',
+                    {
+                        'username': req.session.username
+                    },
+                    {
+                        $set: {'avatar': req.session.avatar}
+                    },
+                    function (err, result) {
+                        if (err) {
+                            res.send('-3');
+                            return;
+                        }
+                        res.send('1');
+                    })
             })
     });
 }
