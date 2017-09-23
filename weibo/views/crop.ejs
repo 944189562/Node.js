@@ -1,16 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <title>Aspect Ratio with Preview Pane | Jcrop Demo</title>
-    <meta http-equiv="Content-type" content="text/html;charset=UTF-8"/>
-    <link rel="stylesheet" href="/css/jquery.Jcrop.css" type="text/css"/>
+    <meta http-equiv="Content-type" content="text/html;charset=UTF-8" />
+    <link rel="stylesheet" href="/css/jquery.Jcrop.css" type="text/css" />
     <!--<link rel="stylesheet" href="/css/bootstrap.min.css">-->
     <script src="/js/jquery.min.js"></script>
     <script src="/js/jquery.Jcrop.min.js"></script>
     <style type="text/css">
-
         /* Apply these styles only when #preview-pane has
            been placed within the Jcrop widget */
+        
         .jcrop-holder #preview-pane {
             display: block;
             position: absolute;
@@ -20,25 +21,27 @@
             padding: 6px;
             border: 1px rgba(0, 0, 0, .4) solid;
             background-color: white;
-
             -webkit-border-radius: 6px;
             -moz-border-radius: 6px;
             border-radius: 6px;
-
             -webkit-box-shadow: 1px 1px 5px 2px rgba(0, 0, 0, 0.2);
             -moz-box-shadow: 1px 1px 5px 2px rgba(0, 0, 0, 0.2);
             box-shadow: 1px 1px 5px 2px rgba(0, 0, 0, 0.2);
         }
-
         /* The Javascript code will set the aspect ratio of the crop
            area based on the size of the thumbnail preview,
            specified here */
+        
         #preview-pane .preview-container {
             width: 250px;
             height: 250px;
             overflow: hidden;
         }
-
+        
+        .alert {
+            display: none;
+        }
+        
         button {
             width: 100px;
             height: 40px;
@@ -51,110 +54,111 @@
         }
     </style>
 </head>
-<body>
-<img src="/avatar/<%= avatar %>" id="target" alt="[Jcrop Example]"/>
-<div id="preview-pane">
-    <div class="preview-container">
-        <img src="/avatar/<%= avatar %>" class="jcrop-preview" alt="Preview"/>
-    </div>
-</div>
-<p>
-    <button type="button">裁&nbsp;&nbsp;剪</button>
-</p>
 
-<div class="alert alert-dismissible" role="alert">
-    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span
+<body>
+    <img src="/avatar/<%= avatar %>" id="target" alt="[Jcrop Example]" />
+    <div id="preview-pane">
+        <div class="preview-container">
+            <img src="/avatar/<%= avatar %>" class="jcrop-preview" alt="Preview" />
+        </div>
+    </div>
+    <p>
+        <button type="button">裁&nbsp;&nbsp;剪</button>
+    </p>
+
+    <div class="alert alert-dismissible" role="alert">
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span
                 aria-hidden="true">&times;</span>
     </button>
-    <strong></strong>
-</div>
+        <strong></strong>
+    </div>
 
-<script type="text/javascript">
-    jQuery(function ($) {
+    <script type="text/javascript">
+        jQuery(function($) {
 
-        // Create variables (in this scope) to hold the API and image size
-        var jcrop_api,
-            boundx,
-            boundy,
+            // Create variables (in this scope) to hold the API and image size
+            var jcrop_api,
+                boundx,
+                boundy,
 
-            // Grab some information about the preview pane
-            $preview = $('#preview-pane'),
-            $pcnt = $('#preview-pane .preview-container'),
-            $pimg = $('#preview-pane .preview-container img'),
+                // Grab some information about the preview pane
+                $preview = $('#preview-pane'),
+                $pcnt = $('#preview-pane .preview-container'),
+                $pimg = $('#preview-pane .preview-container img'),
 
-            xsize = $pcnt.width(),
-            ysize = $pcnt.height();
-        $('#target').Jcrop({
-            onChange: updatePreview,
-            onSelect: updatePreview,
-            aspectRatio: xsize / ysize
-        }, function () {
-            // Use the API to get the real image size
-            var bounds = this.getBounds();
-            boundx = bounds[0];
-            boundy = bounds[1];
-            // Store the API in the jcrop_api variable
-            jcrop_api = this;
+                xsize = $pcnt.width(),
+                ysize = $pcnt.height();
+            $('#target').Jcrop({
+                onChange: updatePreview,
+                onSelect: updatePreview,
+                aspectRatio: xsize / ysize
+            }, function() {
+                // Use the API to get the real image size
+                var bounds = this.getBounds();
+                boundx = bounds[0];
+                boundy = bounds[1];
+                // Store the API in the jcrop_api variable
+                jcrop_api = this;
 
-            // Move the preview into the jcrop container for css positioning
-            $preview.appendTo(jcrop_api.ui.holder);
-        });
+                // Move the preview into the jcrop container for css positioning
+                $preview.appendTo(jcrop_api.ui.holder);
+            });
 
-        function updatePreview(c) {
-            if (parseInt(c.w) > 0) {
-                var rx = xsize / c.w;
-                var ry = ysize / c.h;
-                $pimg.css({
-                    width: Math.round(rx * boundx) + 'px',
-                    height: Math.round(ry * boundy) + 'px',
-                    marginLeft: '-' + Math.round(rx * c.x) + 'px',
-                    marginTop: '-' + Math.round(ry * c.y) + 'px'
-                });
-            }
-        };
-        $('button').click(function () {
-            var width = parseInt($('.jcrop-holder>div:first-child').css('width'));
-            var height = parseInt($('.jcrop-holder>div:first-child').css('height'));
-            var top = parseInt($('.jcrop-holder>div:first-child').css('top'));
-            var left = parseInt($('.jcrop-holder>div:first-child').css('left'));
-            console.log({
-                width: width,
-                height: height,
-                top: top,
-                left: left
-            })
-//            return;
-            $.ajax({
-                url: '/doCut',
-                type: 'post',
-                data: {
-                    width: width,
-                    height: height,
-                    top: top,
-                    left: left
-                },
-                success: function (res) {
-                    if (res == '1') {
-                        //注册成功
-                        $('.alert').addClass('alert-success').find('strong').html('修改成功').end().fadeIn();
-                        setTimeout(function () {
-                            window.location = '/';
-                        }, 1000)
-                    } else if (res == '-1') {
-                        //注册失败
-                        $('.alert').addClass('alert-warning').find('strong').html('修改失败').end().fadeIn();
-                    } else if (res == '-3') {
-                        //服务器出错
-                        $('.alert').addClass('alert-danger').find('strong').html('连接不到服务器').end().fadeIn();
-                    }
-                },
-                error: function (err) {
-                    alert(JSON.stringify(err));
+            function updatePreview(c) {
+                if (parseInt(c.w) > 0) {
+                    var rx = xsize / c.w;
+                    var ry = ysize / c.h;
+                    $pimg.css({
+                        width: Math.round(rx * boundx) + 'px',
+                        height: Math.round(ry * boundy) + 'px',
+                        marginLeft: '-' + Math.round(rx * c.x) + 'px',
+                        marginTop: '-' + Math.round(ry * c.y) + 'px'
+                    });
                 }
+            };
+            $('button').click(function() {
+                var width = parseInt($('.jcrop-holder>div:first-child').css('width'));
+                var height = parseInt($('.jcrop-holder>div:first-child').css('height'));
+                var top = parseInt($('.jcrop-holder>div:first-child').css('top'));
+                var left = parseInt($('.jcrop-holder>div:first-child').css('left'));
+                console.log({
+                        width: width,
+                        height: height,
+                        top: top,
+                        left: left
+                    })
+                    //            return;
+                $.ajax({
+                    url: '/doCut',
+                    type: 'post',
+                    data: {
+                        width: width,
+                        height: height,
+                        top: top,
+                        left: left
+                    },
+                    success: function(res) {
+                        if (res == '1') {
+                            //注册成功
+                            $('.alert').addClass('alert-success').find('strong').html('修改成功').end().fadeIn();
+                            setTimeout(function() {
+                                window.location = '/';
+                            }, 1000)
+                        } else if (res == '-1') {
+                            //注册失败
+                            $('.alert').addClass('alert-warning').find('strong').html('修改失败').end().fadeIn();
+                        } else if (res == '-3') {
+                            //服务器出错
+                            $('.alert').addClass('alert-danger').find('strong').html('连接不到服务器').end().fadeIn();
+                        }
+                    },
+                    error: function(err) {
+                        alert(JSON.stringify(err));
+                    }
+                })
             })
-        })
-    });
-</script>
+        });
+    </script>
 </body>
-</html>
 
+</html>
